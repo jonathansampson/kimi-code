@@ -1,5 +1,11 @@
 # @moonshot-ai/kimi-code
 
+## 0.31.2
+
+### Patch Changes
+
+- [#2416](https://github.com/MoonshotAI/kimi-code/pull/2416) [`eaab2b6`](https://github.com/MoonshotAI/kimi-code/commit/eaab2b6f28c0b958edf8ab5ae5e78a4c0426af26) Thanks [@mangeshraut712](https://github.com/mangeshraut712)! - Fall back to the built-in models.dev catalog snapshot when the public catalog is unreachable, so Known third-party provider import still works offline or in blocked networks.
+
 ## 0.31.1
 
 ### Patch Changes
