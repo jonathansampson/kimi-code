@@ -36,6 +36,7 @@ describe('GitService', () => {
     git(repo, 'init');
     git(repo, 'config', 'user.email', 'test@example.com');
     git(repo, 'config', 'user.name', 'Test');
+    git(repo, 'config', 'commit.gpgsign', 'false');
     disposables = new DisposableStore();
     ix = createServices(disposables, {
       additionalServices: (reg) => {
@@ -123,6 +124,16 @@ describe('GitService', () => {
       writeFileSync(join(repo, 'b.txt'), 'brand new\n');
 
       const result = await service.diff(repo, 'b.txt', join(repo, 'b.txt'));
+      expect(result.diff).toContain('--- /dev/null');
+      expect(result.diff).toContain('+brand new');
+    });
+
+    it('returns an all-added diff for a staged file before the first commit', async () => {
+      writeFileSync(join(repo, 'a.txt'), 'brand new\n');
+      git(repo, 'add', 'a.txt');
+
+      const result = await service.diff(repo, 'a.txt', join(repo, 'a.txt'));
+      expect(result.diff).toContain('--- /dev/null');
       expect(result.diff).toContain('+brand new');
     });
 

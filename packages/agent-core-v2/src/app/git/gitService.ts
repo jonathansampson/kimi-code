@@ -26,6 +26,16 @@ const DIFF_MAX_BYTES = 1_048_576;
 const PR_SPAWN_TIMEOUT_MS = 5_000;
 const PULL_REQUEST_TTL_MS = 60_000;
 
+// `/dev/null` isn't a recognized device path on native Windows: a leading
+// `/` resolves as drive-relative, so git (and Node) treat it as a literal
+// path off the current drive's root (e.g. `C:\dev\null`) rather than the
+// null device. If nothing exists there, `--no-index` just fails to access
+// it; if something does, git's directory-vs-file fixup in diff-no-index.c
+// appends the other side's basename and fails on that instead. `NUL` is
+// the alias Windows git actually recognizes as the null device, and the
+// diff output still normalizes the header to `--- /dev/null`.
+const NULL_DEVICE = process.platform === 'win32' ? 'NUL' : '/dev/null';
+
 export class GitService implements IGitService {
   declare readonly _serviceBrand: undefined;
 
@@ -90,7 +100,7 @@ export class GitService implements IGitService {
     if (untracked || !hasHead) {
       const res = await this.runCommand(
         'git',
-        ['diff', '--no-color', '--no-index', '--', '/dev/null', relPath],
+        ['diff', '--no-color', '--no-index', '--', NULL_DEVICE, relPath],
         cwd,
       );
       if (res.exitCode !== 0 && res.exitCode !== 1) {
@@ -176,7 +186,7 @@ export class GitService implements IGitService {
         return { exitCode, stdout, stderr };
       }
       const timeout = new Promise<'timeout'>((resolve) => {
-        timer = setTimeout(() => resolve('timeout'), options.timeoutMs);
+        timer = setTimeout(() =>{  resolve('timeout'); }, options.timeoutMs);
         timer.unref?.();
       });
       const result = await Promise.race([
